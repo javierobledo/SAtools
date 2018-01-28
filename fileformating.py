@@ -1,4 +1,4 @@
-import csv, os, string
+import csv, os, string, json
 from anytree import Node, RenderTree
 from collections import defaultdict
 
@@ -50,5 +50,8 @@ def add( t, path ):
 
 #splitCSVfileInTxts("documents-2017-07-24.csv","/Users/jrobledo/Desktop/corpus")
 #clusters, paths = readMalletFile("demomallet")
-clusters, paths = readMalletFile("/Users/jrobledo/Desktop/resultHLDA")
-print(clusters, paths)
+clusters, paths = readMalletFile("/Users/jrobledo/Dropbox/Arquitectura/resultHLDA")
+with open('clustertree.json', 'w') as f:
+    print(json.dump(paths,f))
+with open('clusterwords.json', 'w') as g:
+    print(json.dump(clusters, g))
