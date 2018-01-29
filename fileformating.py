@@ -16,6 +16,7 @@ def splitCSVfileInTxts(file, directory):
             f = open(os.path.join(directory, filename),'w')
             f.write(filecontent)
             f.close()
+    return directory
 
 
 def readMalletFile(mallet):
@@ -48,10 +49,43 @@ def add( t, path ):
     for node in path:
         t = t[node]
 
+def parentStructure(tree, parent):
+    n = []
+    if tree == {}:
+        return []
+    for node in tree.keys():
+        n += [(node,parent)] + parentStructure(tree[node], node)
+    return n
+
+def processMalletHLDAOutput(filepath):
+    path, filename = os.path.split(filepath)
+    filename, file_extension = os.path.splitext(filename)
+    clusters, paths = readMalletFile(filepath)
+    tree = parentStructure(paths, None)
+    with open(os.path.join(path,filename+"clustertree.csv"), 'w') as csvoutfile:
+        writer = csv.DictWriter(csvoutfile, fieldnames=["name", "parent"], quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+        writer.writeheader()
+        for cluster, parent in tree:
+            row = {"name": str(cluster), "parent": str(parent)}
+            writer.writerow(row)
+    with open(os.path.join(path,filename+'clusterwords.json'), 'w') as g:
+        json.dump(clusters, g)
+    return os.path.join(path,filename+"clustertree.csv")+" "+os.path.join(path,filename+'clusterwords.json')
+
+import sys
+
+if len(sys.argv) == 3:
+    if(sys.argv[1] == "malletHLDA"):
+        print(processMalletHLDAOutput(sys.argv[2]))
+    elif(sys.argv[1] == "CSVtoTXTs"):
+        filepath = sys.argv[2]
+        path, filename = os.path.split(filepath)
+        print(splitCSVfileInTxts(filepath,os.path.join(path, "corpus")))
+
 #splitCSVfileInTxts("documents-2017-07-24.csv","/Users/jrobledo/Desktop/corpus")
-#clusters, paths = readMalletFile("demomallet")
-clusters, paths = readMalletFile("/Users/jrobledo/Dropbox/Arquitectura/resultHLDA")
-with open('clustertree.json', 'w') as f:
-    print(json.dump(paths,f))
-with open('clusterwords.json', 'w') as g:
-    print(json.dump(clusters, g))
+#processMalletHLDAOutput("/Users/jrobledo/Dropbox/Arquitectura/resultHLDA")
+# with open('clustertree.json', 'w') as f:
+#     print(json.dump(paths,f))
+# with open('clusterwords.json', 'w') as g:
+#     print(json.dump(clusters, g))
+# create a list of tuples where the structure is (node, parent), i.e. [(0,None),(52,0)...]
