@@ -57,6 +57,15 @@ def parentStructure(tree, parent):
         n += [(node,parent)] + parentStructure(tree[node], node)
     return n
 
+
+def term_frequency(words):
+    tf = {}
+    for word in words:
+        if word not in tf:
+            tf[word] = 0
+        tf[word] += 1
+    return tf
+
 def processMalletHLDAOutput(filepath):
     path, filename = os.path.split(filepath)
     filename, file_extension = os.path.splitext(filename)
@@ -69,7 +78,11 @@ def processMalletHLDAOutput(filepath):
             row = {"name": str(cluster), "parent": str(parent)}
             writer.writerow(row)
     with open(os.path.join(path,filename+'clusterwords.json'), 'w') as g:
-        json.dump(clusters, g)
+        newclusters = {}
+        for cluster,words in clusters.items():
+            newclusters[cluster] = term_frequency(words)
+        print(newclusters)
+        json.dump(newclusters, g)
     return os.path.join(path,filename+"clustertree.csv")+" "+os.path.join(path,filename+'clusterwords.json')
 
 import sys
